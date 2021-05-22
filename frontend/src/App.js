@@ -25,6 +25,8 @@ function App() {
   const [filterState, setFilterState] = useState("");
   const [columnsState, setColumnState] = useState("name");
   const [conditionState, setConditionState] = useState("contains");
+  const [sortColumnState, setSortColumnState] = useState("name");
+  const [sortOrder, setSortOrder] = useState("");
   const [page, setPage] = useState(0);
 
   let renderItems = () => {
@@ -53,6 +55,16 @@ function App() {
   };
   const lessNumber = (rows, column) => {
     return rows.filter((row) => Number(row[column]) < Number(filterState));
+  };
+
+  const sortResults = (prop, asc) => {
+    return itemsDisplayed.sort((a, b) => {
+      if (asc === "asc") {
+        return a[prop] > b[prop] ? 1 : a[prop] < b[prop] ? -1 : 0;
+      } else {
+        return b[prop] > a[prop] ? 1 : b[prop] < a[prop] ? -1 : 0;
+      }
+    });
   };
 
   useEffect(() => {
@@ -93,15 +105,25 @@ function App() {
   }, [filterState, columnsState, conditionState]);
 
   useEffect(() => {
+    if (sortOrder !== "") {
+      setItemsDisplayed(sortResults(sortColumnState, sortOrder));
+      renderItems();
+    }
+  }, [sortColumnState, sortOrder]);
+
+  useEffect(() => {
     renderItems();
   }, [itemsDisplayed, page]);
 
   return (
     <div className="table-wrapper">
       <div>
+        <div className="my-2 mx-2">
+          <h3>Filtering</h3>
+        </div>
         <Form>
           <Form.Row>
-            <Col xs="auto" className="my-2">
+            <Col xs="auto" className="my-2 mx-2">
               <Form.Control
                 as="select"
                 className="mr-sm-2"
@@ -138,13 +160,50 @@ function App() {
                 </option>
               </Form.Control>
             </Col>
-            <Col xs="auto" className="my-2">
+            <Col xs="auto" className="my-2 mx-2">
               <Form.Control
                 placeholder="Data to filter"
                 onChange={(event) => {
                   setFilterState(event.target.value);
                 }}
               />
+            </Col>
+          </Form.Row>
+        </Form>
+        <div className="my-2 mx-2">
+          <h4>Sorting</h4>
+        </div>
+        <Form>
+          <Form.Row>
+            <Col xs="auto" className="my-2 mx-2">
+              <Form.Control
+                as="select"
+                className="mr-sm-2"
+                id="inlineFormCustomSelect"
+                onChange={(event) => {
+                  setSortColumnState(event.target.value);
+                }}
+              >
+                <option value="name">Name</option>
+                <option value="amount">Amount</option>
+                <option value="distance">Distance</option>
+              </Form.Control>
+            </Col>
+            <Col xs="auto" className="my-2">
+              <Form.Control
+                as="select"
+                className="mr-sm-2"
+                id="inlineFormCustomSelect"
+                onChange={(event) => {
+                  setSortOrder(event.target.value);
+                }}
+              >
+                <option disabled={sortOrder !== ""} defaultChecked>
+                  Choose...
+                </option>
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+              </Form.Control>
             </Col>
           </Form.Row>
         </Form>
