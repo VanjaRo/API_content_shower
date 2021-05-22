@@ -1,0 +1,111 @@
+import Pagination from "react-bootstrap/Pagination";
+
+import "./App.css";
+
+import { Table, Dropdown, ButtonGroup, DropdownButton } from "react-bootstrap";
+import { useEffect, useState } from "react";
+
+// function itemObj() {
+//   this.date = util.randomDate(new Date(2012, 0, 1), new Date());
+//   this.name = util.makeId(4);
+//   this.count = Math.floor(Math.random() * 100);
+//   this.distance = Math.floor(Math.random() * 1000);
+// }
+
+// for (var i = 0; i < 101; i++) {
+//   items.push(new itemObj());
+// }
+
+const ITEMS_PER_PAGE = 10;
+
+function App() {
+  const [itemsDisplayed, setItemsDisplayed] = useState([]);
+  const [itemsToRender, setItemsToRender] = useState([]);
+  const [filterState, setFilterState] = useState("");
+  const [columnsState, setColumnsState] = useState("");
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    fetch("http://localhost:3002/data")
+      .then((results) => results.json())
+      .then((data) => {
+        setItemsDisplayed(data.data);
+        setPage(0);
+      });
+  }, []);
+
+  useEffect(() => {
+    setItemsToRender(
+      itemsDisplayed.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE)
+    );
+  }, [page]);
+
+  return (
+    <div className="table-wrapper">
+      <div>
+        <ButtonGroup>
+          <DropdownButton
+            as={ButtonGroup}
+            title="Columns"
+            id="dropdown-columns"
+          >
+            <Dropdown.Item eventKey="1">Name</Dropdown.Item>
+            <Dropdown.Item eventKey="2">Amount</Dropdown.Item>
+            <Dropdown.Item eventKey="3">Distance</Dropdown.Item>
+          </DropdownButton>
+
+          <DropdownButton
+            as={ButtonGroup}
+            title="Filter Type"
+            id="dropdown-filter"
+          >
+            <Dropdown.Item eventKey="1">Equals</Dropdown.Item>
+            <Dropdown.Item eventKey="2">Contains</Dropdown.Item>
+            <Dropdown.Item eventKey="3">Bigger</Dropdown.Item>
+            <Dropdown.Item eventKey="4">Less</Dropdown.Item>
+          </DropdownButton>
+        </ButtonGroup>
+      </div>
+      <Table striped bordered hover>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Name</th>
+            <th>Amount</th>
+            <th>Distance</th>
+          </tr>
+        </thead>
+        <tbody>
+          {itemsToRender.map((item, index) => {
+            return (
+              <tr>
+                <td>{item.date.toString()}</td>
+                <td>{item.name}</td>
+                <td>{item.amount}</td>
+                <td>{item.distance}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </Table>
+      <Pagination>
+        {new Array(Math.ceil(itemsDisplayed.length / ITEMS_PER_PAGE))
+          .fill(0)
+          .map((item, index) => {
+            return (
+              <Pagination.Item
+                key={index}
+                active={index === page}
+                onClick={() => setPage(index)}
+              >
+                {index + 1}
+              </Pagination.Item>
+            );
+          })}
+      </Pagination>
+    </div>
+  );
+}
+
+export default App;
+
